@@ -1,54 +1,96 @@
-# Uncertain Label Handling for Pleural Effusion Classification on CheXpert
+# CheXpert 胸腔积液分类中的不确定标签处理
 
-SDSC 6018 Health Data Analytics · Group 23
+简体中文 | [English](README.en.md)
 
-## Research question
+SDSC 6018 Health Data Analytics · 第 23 组
 
-How does the treatment of uncertain training labels affect pleural effusion classification on frontal chest radiographs when the model, patient split, and training protocol are held fixed?
+## 研究问题
 
-CheXpert training labels are extracted from radiology reports. A report may describe a possible effusion, explicitly confirm or rule it out, or leave it unmentioned. Treating possible effusions as positive or negative changes the supervision the model receives. Excluding them reduces the number of training examples.
+在模型、患者划分和训练流程相同的条件下，如何处理不确定训练标签，会对正位胸片的胸腔积液分类表现产生什么影响？
 
-## Dataset and preparation
+CheXpert 训练标签从放射科报告自动提取。报告可能明确描述有积液、明确否定、表述不确定，或者未提及积液。将不确定标签映射为阳性或阴性会改变模型接收的监督信号，排除这些标签则会减少训练样本。
 
-The project uses frontal radiographs from [CheXpert](https://aimi.stanford.edu/datasets/chexpert-chest-x-rays) and the `Pleural Effusion` label. The original dataset contains 224,316 radiographs from 65,240 patients.
+## 数据与预处理
 
-| Raw label | Meaning |
+项目使用 CheXpert 的正位胸片和 `Pleural Effusion` 标签。原始数据集包含 65,240 名患者的 224,316 张胸片，本项目使用低分辨率版 `CheXpert-v1.0-small`。[Stanford 数据集说明](https://aimi.stanford.edu/datasets/chexpert-chest-x-rays)
+
+| 原始标签 | 含义 |
 | --- | --- |
-| `1` | Positive |
-| `0` | Negative |
-| `-1` | Uncertain |
-| Blank | Unmentioned in the report |
+| `1` | 阳性 |
+| `0` | 阴性 |
+| `-1` | 不确定 |
+| 空白 | 报告未提及 |
 
-1. Audit image paths, unreadable files, and duplicates. Summarize the four raw label categories before exclusions and remapping.
-2. Draw a fixed, seeded sample of up to 10,000 patients from the official training data, with the final size determined by the GPU pilot. Retain eligible frontal images and split patients 80:20 into training and development sets before transforming labels. Use the same patient lists across strategies.
-3. Reserve the official expert-labeled validation set for final evaluation. Verify that patients do not overlap across the three sets and report counts at the patient, study, and image levels.
-4. Resize images while preserving aspect ratio, pad to 224 × 224, replicate the grayscale channel three times, and normalize for the pretrained model.
+1. 检查图像路径、无法读取的文件和重复项。筛选正位胸片，在排除空白和转换标签前统计四类原始标签。
+2. 根据 GPU pilot 确定正式规模，从官方训练来源用固定种子抽取最多 10,000 名患者。保留合格正位胸片，按患者以 80:20 划分训练集和开发集，再执行标签转换。三种策略共用患者划分。
+3. 保留官方专家标注验证集用于最终评估。核查三组患者无重叠，并报告患者数、检查数和图像数。
+4. 保持宽高比缩放图像，填充到 224 × 224，将灰度复制为三个通道，并按预训练模型要求归一化。
 
-## Experimental design
+## 实验设计
 
-The planned model is an ImageNet-pretrained DenseNet-121 with a single sigmoid output and binary cross-entropy loss. All strategies exclude blank training labels and share preprocessing, pretrained initialization, seed, and training budget.
+计划使用 ImageNet 预训练的 DenseNet-121，配一个 Sigmoid 输出和二元交叉熵损失。三组统一排除空白训练标签，共用预处理、预训练初始化、随机种子和训练预算。
 
-| Strategy | Treatment of uncertain training labels |
+| 策略 | 不确定训练标签的处理 |
 | --- | --- |
-| U-Zeroes (reference) | Map `-1` to negative (`0`) |
-| U-Ones | Map `-1` to positive (`1`) |
-| U-Ignore | Exclude examples labeled `-1` from training |
+| U-Zeroes（对照） | 将 `-1` 映射为阴性 `0` |
+| U-Ones | 将 `-1` 映射为阳性 `1` |
+| U-Ignore | 排除标为 `-1` 的训练样本 |
 
-The proposed training setup uses Adam with a learning rate of 0.0001, a batch size of 32, and up to 10 epochs. A constant predictor based on prevalence among explicit positive and negative training labels serves as a sanity baseline. The comparison includes the effect of using fewer training examples under U-Ignore.
+计划使用 Adam，学习率 0.0001，批大小 32，最多训练 10 个 epoch。另用明确阳性和阴性训练样本中的阳性比例构建常数预测基线。比较结果也包含 U-Ignore 有效训练样本减少带来的影响。
 
-## Evaluation
+## 评估
 
-- Use only explicit positive and negative development labels. Select each model's checkpoint by development AUROC and its decision threshold by maximizing Youden's J on the development set.
-- Freeze the selected checkpoints and thresholds before evaluating on the official expert-labeled set. Average probabilities across frontal images from the same study for study-level evaluation.
-- Report AUROC as the primary metric, with average precision (AP), sensitivity, and specificity as secondary metrics. Compare ROC and precision–recall curves, confusion matrices, and representative errors and disagreements.
+- 开发集仅使用明确的阳性和阴性标签。按开发集 AUROC 选择模型检查点，再在开发集上最大化 Youden's J 选择阈值。
+- 固定检查点和阈值后，在官方专家标注集上做最终评估。同一次检查含多张正位胸片时，平均预测概率后计算检查级指标。
+- 主要指标为 AUROC，次要指标为平均精确率（AP）、敏感度和特异度。比较 ROC 曲线、精确率–召回率曲线、混淆矩阵及代表性错例。
 
-## Repository status and data access
+## 项目进度与数据访问
 
-This repository currently documents the proposed protocol. The final sample size, training runs, and results are pending.
+数据检查和试读样例已完成。正式样本规模、训练和实验结果待确定。全量数据、原始标签和生成的清单存放在 Git 忽略的本地 `data/` 目录。
 
-Obtain CheXpert through the [Stanford AIMI dataset page](https://aimi.stanford.edu/datasets/chexpert-chest-x-rays). Store radiographs, raw labels, and patient-level manifests in an ignored local directory such as `data/`. Share code and aggregate results in accordance with the dataset terms.
+## 目录结构
 
-## References
+```text
+chexpert-effusion-uncertainty/
+├── README.md                     # 默认中文说明
+├── README.en.md                  # 英文说明
+├── .gitignore                    # 忽略本地数据和训练产物
+├── examples/loader_sample/       # 32 张真实胸片和试读清单
+├── scripts/
+│   └── audit_chexpert.py         # 检查胸片并生成清单
+└── data/                         # Git 忽略的本地文件
+    ├── .download-venv/           # 安装 KaggleHub 和 Pillow 的本地环境
+    ├── datasets/ashery/chexpert/versions/1/
+    │   ├── train/                # 按患者和检查组织的训练来源胸片
+    │   ├── train.csv             # 原始 CheXpert 训练标签
+    │   ├── valid/                # 留作最终评估的官方验证胸片
+    │   └── valid.csv             # 官方专家标签
+    └── audit/
+        ├── train_pool.csv        # 抽样划分前的合格正位胸片
+        ├── final_eval.csv        # 最终评估清单
+        ├── loader_sample.csv     # 本地生成的 32 张试读清单
+        ├── label_distribution.csv # 图像级标签数量和比例
+        ├── audit_summary.json    # 筛选计数、样本量和患者重叠检查
+        └── issues.csv            # 逐行记录数据质量问题
+```
+
+## 克隆后试读样例
+
+使用 `examples/loader_sample/manifest.csv` 作为清单，`examples/loader_sample/` 作为图像根目录。样例含 32 张真实正位胸片，四种原始标签各 8 张，用来验证 DataLoader 的路径解析、图像变换和标签读取。 [样例说明](examples/loader_sample/README.md)
+
+## 运行数据检查
+
+在 Python 环境中安装 Pillow 后，从仓库根目录运行下面的命令。如果数据解压在别处，把 `--data-root` 改为包含 `train.csv` 和 `valid.csv` 的目录。
+
+```sh
+python scripts/audit_chexpert.py \
+  --data-root data/datasets/ashery/chexpert/versions/1 \
+  --output-dir data/audit
+```
+
+脚本逐张解码候选正位 JPEG，并生成清单、检查记录和标签统计。输出清单中的路径相对于 `--data-root`，使用 `patient_id` 和 `study_id` 共同识别一次检查。原始标签保留为 `1`、`0`、`-1` 或空白字段。
+
+## 参考文献
 
 - Irvin et al. (2019). [CheXpert: A Large Chest Radiograph Dataset with Uncertainty Labels and Expert Comparison](https://doi.org/10.1609/aaai.v33i01.3301590).
 - Huang et al. (2017). [Densely Connected Convolutional Networks](https://arxiv.org/abs/1608.06993).
