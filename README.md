@@ -78,6 +78,18 @@ chexpert-effusion-uncertainty/
 
 使用 `examples/loader_sample/manifest.csv` 作为清单，`examples/loader_sample/` 作为图像根目录。样例含 32 张真实正位胸片，四种原始标签各 8 张，用来验证 DataLoader 的路径解析、图像变换和标签读取。 [样例说明](examples/loader_sample/README.md)
 
+### 清单字段与 DataLoader 约定
+
+| 字段 | 读取规则 |
+| --- | --- |
+| `image_path` | 相对路径。与配置的图像根目录拼接，试读使用 `examples/loader_sample/`，正式实验使用 CheXpert 解压目录。 |
+| `patient_id` | 患者标识，用于患者级划分和重叠检查。 |
+| `study_id` | 检查标识。与 `patient_id` 一起唯一标识一次检查，用于汇总同次检查的图像预测。 |
+| `pleural_effusion_raw` | 原始标签，取值为 `1`、`0`、`-1` 或空白。读取时显式识别空字段，例如 Pandas 默认可能将其读为 `NaN`。监督训练统一排除空白，再按实验策略处理 `-1`。 |
+| `split` | 试读清单中的 `train_pool` 表示训练候选池。正式清单用 `train` 和 `dev` 区分训练集与开发集，官方评估清单使用 `final_eval`。 |
+
+DataLoader 按这些字段读取清单，通过配置切换图像根目录。正式清单沿用相同的列名和原始标签格式。
+
 ## 运行数据检查
 
 在 Python 环境中安装 Pillow 后，从仓库根目录运行下面的命令。如果数据解压在别处，把 `--data-root` 改为包含 `train.csv` 和 `valid.csv` 的目录。

@@ -92,6 +92,18 @@ Use `examples/loader_sample/manifest.csv` as the manifest and
 from the training pool, with eight per raw label state. See the
 [sample instructions](examples/loader_sample/README.md).
 
+### Manifest fields and DataLoader conventions
+
+| Field | How to read it |
+| --- | --- |
+| `image_path` | Relative path. Join it to the configured image root. Use `examples/loader_sample/` for the loader test and the extracted CheXpert directory for the formal experiment. |
+| `patient_id` | Patient identifier for patient-level splitting and overlap checks. |
+| `study_id` | Study identifier. Use it together with `patient_id` to identify a study and aggregate predictions across its images. |
+| `pleural_effusion_raw` | Raw label with values `1`, `0`, `-1`, or blank. Handle empty fields explicitly. Pandas may parse them as `NaN` by default. Exclude blank labels consistently from supervised training, then apply the selected strategy to `-1`. |
+| `split` | `train_pool` in the loader sample indicates the training candidate pool. Formal manifests use `train` and `dev` for training and development, and `final_eval` for the official evaluation set. |
+
+The DataLoader reads these fields and uses configuration to switch image roots. Formal manifests use the same column names and raw label encoding.
+
 ## Run the data audit
 
 Install Pillow in your Python environment, then run from the repository root:
