@@ -20,10 +20,12 @@ INTRO = """# Group 23 正式训练(Kaggle 一键运行)
 
 CELLS = [
     """# 1. 依赖 + 下载代码
+# 如果报"Could not resolve host":Internet 虽然开了,但要 Restart 重启会话才生效
 import os, sys
 REPO = '/kaggle/working/chexpert-effusion-uncertainty'
 if not os.path.isdir(REPO):
     !git clone --depth 1 https://github.com/shx815/chexpert-effusion-uncertainty {REPO}
+assert os.path.isdir(REPO), '克隆失败:确认 Settings→Internet 是 On,点 Restart 重启会话后再运行本格'
 os.chdir(REPO)
 !pip install -q pyyaml
 !python -c "import torch; print('CUDA:', torch.cuda.is_available(), '|', torch.cuda.get_device_name(0) if torch.cuda.is_available() else '')"
