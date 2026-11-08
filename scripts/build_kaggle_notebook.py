@@ -33,7 +33,7 @@ os.chdir(REPO)
 
     """# 2. 冒烟测试(可选,约 1 分钟):在 32 张样例上验证环境
 !python scripts/train.py --config configs/smoke.yaml --strategy uzeroes
-!python scripts/eval.py --outputs outputs_smoke""",
+!python scripts/eval.py --outputs outputs_smoke --strategies uzeroes""",
 
     """# 3. 数据审计(约 30-60 分钟):解码检查 19 万张正位胸片,生成清单
 !python scripts/audit_chexpert.py --data-root /kaggle/input/chexpert --output-dir data/audit --workers 4
