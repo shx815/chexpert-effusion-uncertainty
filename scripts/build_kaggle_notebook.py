@@ -15,7 +15,8 @@ INTRO = """# Group 23 正式训练(Kaggle 一键运行)
 2. **联网**:Settings → Internet 选 `On`(下载代码需要)
 3. **数据**:右侧 Data → Add Input → 搜索 `ashery/chexpert`,点 Add
 
-数据集会自动挂载到 `/kaggle/input/chexpert`,不用下载 11GB。
+数据集会自动挂载,不用下载 11GB(实际路径可能因账号而异,第 1 格会用
+`ls` 显示,正常应看到 `train.csv`、`valid.csv`、`train/`、`valid/`)。
 然后从上到下依次运行每一格。总耗时约 2-3 小时。"""
 
 CELLS = [
@@ -29,14 +30,14 @@ assert os.path.isdir(REPO), '克隆失败:确认 Settings→Internet 是 On,点 
 os.chdir(REPO)
 !pip install -q pyyaml
 !python -c "import torch; print('CUDA:', torch.cuda.is_available(), '|', torch.cuda.get_device_name(0) if torch.cuda.is_available() else '')"
-!ls /kaggle/input/chexpert""",
+!ls /kaggle/input/datasets/ashery/chexpert""",
 
     """# 2. 冒烟测试(可选,约 1 分钟):在 32 张样例上验证环境
 !python scripts/train.py --config configs/smoke.yaml --strategy uzeroes
 !python scripts/eval.py --outputs outputs_smoke --strategies uzeroes""",
 
     """# 3. 数据审计(约 30-60 分钟):解码检查 19 万张正位胸片,生成清单
-!python scripts/audit_chexpert.py --data-root /kaggle/input/chexpert --output-dir data/audit --workers 4
+!python scripts/audit_chexpert.py --data-root /kaggle/input/datasets/ashery/chexpert --output-dir data/audit --workers 4
 import pandas as pd
 display(pd.read_csv('data/audit/label_distribution.csv'))""",
 

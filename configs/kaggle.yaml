@@ -3,7 +3,7 @@
 # Run:  python scripts/train.py --config configs/kaggle.yaml --strategy uzeroes
 
 data:
-  image_root: /kaggle/input/chexpert
+  image_root: /kaggle/input/datasets/ashery/chexpert
   train_manifest: data/splits/train.csv
   dev_manifest: data/splits/dev.csv
   final_eval_manifest: data/audit/final_eval.csv
