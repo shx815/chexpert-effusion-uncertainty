@@ -1,0 +1,26 @@
+# Smoke test on the 32-image loader sample (CPU). Verifies the full pipeline:
+# data loading, one training epoch, checkpointing, prediction export.
+# Run:  python scripts/train.py --config configs/smoke.yaml
+
+data:
+  image_root: examples/loader_sample
+  train_manifest: examples/loader_sample/manifest.csv
+  dev_manifest: examples/loader_sample/manifest.csv
+  final_eval_manifest: examples/loader_sample/manifest.csv
+  image_size: 224
+  num_workers: 0
+
+strategy: uzeroes
+
+model: densenet121
+
+training:
+  seed: 6018
+  epochs: 2
+  batch_size: 8
+  lr: 1.0e-4
+  weight_decay: 1.0e-5
+  early_stopping_patience: 2
+  augment: false
+
+outputs: outputs_smoke

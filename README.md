@@ -46,7 +46,7 @@ CheXpert 训练标签从放射科报告自动提取。报告可能明确描述�
 
 ## 项目进度与数据访问
 
-数据检查和试读样例已完成。正式样本规模、训练和实验结果待确定。全量数据、原始标签和生成的清单存放在 Git 忽略的本地 `data/` 目录。
+数据检查、试读样例、患者划分与训练评估流水线均已完成，正式训练待 GPU 环境确定后执行。全量数据、原始标签和生成的清单存放在 Git 忽略的本地 `data/` 目录。
 
 ## 目录结构
 
@@ -55,9 +55,21 @@ chexpert-effusion-uncertainty/
 ├── README.md                     # 默认中文说明
 ├── README.en.md                  # 英文说明
 ├── .gitignore                    # 忽略本地数据和训练产物
+├── configs/
+│   ├── experiment.yaml           # 正式实验配置（三种策略共用）
+│   └── smoke.yaml                # 32 张样例冒烟测试配置
+├── chexpert_uncertainty/         # Python 包
+│   ├── config.py                 # 配置加载与默认值
+│   ├── data.py                   # 清单读取、标签策略、图像变换
+│   ├── model.py                  # DenseNet-121 单 Sigmoid 输出
+│   ├── train.py                  # 训练循环、检查点、预测导出
+│   └── metrics.py                # Youden 阈值、二分类指标、检查级汇总
 ├── examples/loader_sample/       # 32 张真实胸片和试读清单
 ├── scripts/
-│   └── audit_chexpert.py         # 检查胸片并生成清单
+│   ├── audit_chexpert.py         # 检查胸片并生成清单
+│   ├── sample_split.py           # 患者级抽样与 80:20 划分
+│   ├── train.py                  # 单个策略的训练入口
+│   └── eval.py                   # 阈值选择与最终评估
 └── data/                         # Git 忽略的本地文件
     ├── .download-venv/           # 安装 KaggleHub 和 Pillow 的本地环境
     ├── datasets/ashery/chexpert/versions/1/
@@ -101,6 +113,35 @@ python scripts/audit_chexpert.py \
 ```
 
 脚本逐张解码候选正位 JPEG，并生成清单、检查记录和标签统计。输出清单中的路径相对于 `--data-root`，使用 `patient_id` 和 `study_id` 共同识别一次检查。原始标签保留为 `1`、`0`、`-1` 或空白字段。
+
+## 患者划分与正式训练
+
+依赖：Python 3.9+，PyTorch、torchvision、pandas、numpy、scikit-learn、matplotlib、PyYAML。
+
+1. 患者级抽样与划分。用固定种子 6018 从训练池抽取最多 10,000 名患者，按患者 80:20 划分，并复查与最终评估集无患者重叠：
+
+   ```sh
+   python scripts/sample_split.py \
+     --pool data/audit/train_pool.csv \
+     --final data/audit/final_eval.csv \
+     --output-dir data/splits
+   ```
+
+2. 正式训练。三种策略共用 `configs/experiment.yaml`，只需修改 `image_root`。每个策略写入 `outputs/<strategy>/`：`log.csv`（逐 epoch 损失与开发集指标）、`best.pt`（按开发集 AUROC 选择）、`last.pt`、`run.json`（配置快照与耗时）、`dev_preds.csv` 和 `eval_preds.csv`：
+
+   ```sh
+   python scripts/train.py --config configs/experiment.yaml --strategy uzeroes
+   python scripts/train.py --config configs/experiment.yaml --strategy uones
+   python scripts/train.py --config configs/experiment.yaml --strategy uignore
+   ```
+
+3. 最终评估。在开发集明确标签上以 Youden's J 选择阈值并冻结，在官方专家标注集上按检查级（同次检查多张胸片取平均概率）计算指标，输出 `outputs/evaluation/`：
+
+   ```sh
+   python scripts/eval.py --outputs outputs
+   ```
+
+本地冒烟测试（无需下载全量数据）：`python scripts/train.py --config configs/smoke.yaml`，在 32 张样例上以 2 个 epoch 跑通完整流程，产物写入 `outputs_smoke/`。
 
 ## 参考文献
 
