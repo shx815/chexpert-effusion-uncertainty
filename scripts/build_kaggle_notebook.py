@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """Build notebooks/kaggle_run.ipynb, the one-click formal run on Kaggle.
 
+Edit the INTRO / CELLS strings below and re-run this script to regenerate
+the notebook; commit the notebook together with the script.
 Usage:  python scripts/build_kaggle_notebook.py
 """
 from pathlib import Path

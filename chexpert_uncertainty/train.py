@@ -6,7 +6,7 @@ Artifacts per strategy, written to outputs/<strategy>/ :
   best.pt        checkpoint with the highest dev AUROC
   last.pt        checkpoint after the final epoch
   run.json       configuration snapshot, sample counts, runtime, device
-  dev_preds.csv  probabilities for every dev row (metrics use explicit labels only)
+  dev_preds.csv  probabilities for every served dev row (metrics use explicit labels only)
   eval_preds.csv probabilities for the official final-evaluation rows
 """
 import json
@@ -25,6 +25,7 @@ from .model import build_model
 
 
 def set_seed(seed):
+    """Seed Python, NumPy and PyTorch for reproducible runs."""
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -45,6 +46,7 @@ def predict_probs(model, loader, device):
 
 
 def evaluate_dev(model, dev_loader, device, explicit_idx):
+    """Dev AUROC and AP over explicit labels only (model-selection metrics)."""
     probs = predict_probs(model, dev_loader, device)
     metrics = binary_metrics(dev_loader.dataset.targets[explicit_idx],
                              probs[explicit_idx], threshold=0.5)
@@ -52,6 +54,14 @@ def evaluate_dev(model, dev_loader, device, explicit_idx):
 
 
 def run(cfg):
+    """Train one label strategy and export predictions.
+
+    Args:
+        cfg: validated configuration dict (see chexpert_uncertainty.config).
+
+    Returns:
+        Path of the strategy's output directory.
+    """
     strategy = cfg['strategy']
     out_dir = os.path.join(cfg['outputs'], strategy)
     os.makedirs(out_dir, exist_ok=True)

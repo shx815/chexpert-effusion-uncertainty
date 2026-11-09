@@ -3,7 +3,8 @@
 
 For every strategy in outputs/<strategy>/:
   1. Load dev_preds.csv and keep explicit 0/1 labels only.
-  2. Choose the decision threshold that maximises Youden's J on the dev set.
+  2. Choose the decision threshold that maximises Youden's J on the dev set
+     (frozen before touching the final-eval set).
   3. Aggregate final-eval probabilities per patient+study (mean).
   4. Compute AUROC / AP / sensitivity / specificity at the frozen threshold.
 

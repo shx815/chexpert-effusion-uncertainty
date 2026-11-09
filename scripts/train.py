@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-"""Train one label strategy.
+"""Command-line entry point for training one label strategy.
 
 Usage (from the repository root):
   python scripts/train.py --config configs/experiment.yaml --strategy uzeroes
   python scripts/train.py --config configs/experiment.yaml --strategy uones
   python scripts/train.py --config configs/experiment.yaml --strategy uignore
 
-All three runs share the same config (seed, budget, splits); only the strategy
-flag differs. Artifacts land in outputs/<strategy>/.
+The three runs share one config (seed, budget, split); only the strategy flag
+differs. Artifacts land in outputs/<strategy>/ (see chexpert_uncertainty.train).
 """
 import argparse
 import sys

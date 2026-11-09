@@ -2,7 +2,7 @@
 """Evaluation metrics shared by training and final evaluation.
 
 Dev metrics always use only explicit 0/1 labels, consistently across the three
-strategies. Final evaluation aggregates per-study (mean probability over the
+strategies. Final evaluation aggregates per study (mean probability over the
 frontal images of a study) before computing study-level metrics.
 """
 import numpy as np
@@ -12,12 +12,16 @@ from sklearn.metrics import (roc_auc_score, average_precision_score,
 
 
 def explicit_mask(raw_labels):
-    """Rows whose raw label is an explicit 0 or 1 (used for dev metrics)."""
+    """Boolean mask of rows whose raw label is an explicit 0 or 1."""
     return np.isin(raw_labels, ('0', '1'))
 
 
 def threshold_by_youden(y_true, probs):
-    """Decision threshold maximising Youden's J = sensitivity + specificity - 1."""
+    """Decision threshold maximising Youden's J = sensitivity + specificity - 1.
+
+    Returns:
+        threshold, best J value.
+    """
     fpr, tpr, thresholds = roc_curve(y_true, probs)
     j = tpr - fpr
     best = int(np.argmax(j))
@@ -25,7 +29,16 @@ def threshold_by_youden(y_true, probs):
 
 
 def binary_metrics(y_true, probs, threshold=0.5):
-    """ROC-AUC, AP, and sensitivity / specificity / confusion matrix at a threshold."""
+    """AUROC, AP, and thresholded sensitivity / specificity / confusion matrix.
+
+    Args:
+        y_true: binary labels (0/1).
+        probs: predicted probabilities of the positive class.
+        threshold: decision threshold applied to probs.
+
+    Returns:
+        Dict with auroc, ap, sensitivity, specificity, tp/fp/tn/fn and n.
+    """
     preds = (probs >= threshold).astype(int)
     tn, fp, fn, tp = confusion_matrix(y_true, preds, labels=[0, 1]).ravel()
     return {
@@ -39,7 +52,10 @@ def binary_metrics(y_true, probs, threshold=0.5):
 
 
 def aggregate_studies(pred_df):
-    """Average probabilities over the frontal images of each patient+study."""
+    """Average probabilities over the frontal images of each patient+study.
+
+    The label of a study is the (unique) raw label of its frontal images.
+    """
     return (pred_df.groupby(['patient_id', 'study_id'])
                    .agg(prob=('prob', 'mean'),
                         label=('pleural_effusion_raw', 'first'))

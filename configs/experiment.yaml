@@ -1,26 +1,27 @@
-# Group 23 — formal experiment configuration.
+# Group 23 - formal experiment configuration.
 # One shared config for the three label strategies; the --strategy flag
-# selects the run. Fill in image_root before launching on the GPU machine.
+# selects the run, everything else stays identical. Fill in image_root
+# before launching on the GPU machine.
 
 data:
-  image_root: /path/to/CheXpert-v1.0-small          # FILL IN: folder containing train/ and valid/
-  train_manifest: data/splits/train.csv
-  dev_manifest: data/splits/dev.csv
-  final_eval_manifest: data/audit/final_eval.csv
-  image_size: 224
-  num_workers: 8
+  image_root: /path/to/CheXpert-v1.0-small   # FILL IN: folder containing train/ and valid/
+  train_manifest: data/splits/train.csv      # from scripts/sample_split.py
+  dev_manifest: data/splits/dev.csv          # from scripts/sample_split.py
+  final_eval_manifest: data/audit/final_eval.csv   # official expert-labelled set
+  image_size: 224                            # square input resolution (aspect ratio preserved)
+  num_workers: 8                             # DataLoader workers
 
 strategy: uzeroes        # uzeroes | uones | uignore (override with --strategy)
 
-model: densenet121
+model: densenet121       # ImageNet-pretrained DenseNet-121, single sigmoid output
 
 training:
-  seed: 6018
-  epochs: 10
+  seed: 6018                    # fixed seed shared by all three strategies
+  epochs: 10                    # maximum epochs; early stopping may stop earlier
   batch_size: 32
-  lr: 1.0e-4
+  lr: 1.0e-4                    # Adam learning rate
   weight_decay: 1.0e-5
-  early_stopping_patience: 4
-  augment: true
+  early_stopping_patience: 4    # stop after this many epochs without dev AUROC improvement
+  augment: true                 # random horizontal flip (training only)
 
-outputs: outputs
+outputs: outputs                # artifacts land in outputs/<strategy>/

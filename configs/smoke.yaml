@@ -1,5 +1,5 @@
-# Smoke test on the 32-image loader sample (CPU). Verifies the full pipeline:
-# data loading, one training epoch, checkpointing, prediction export.
+# Smoke test on the 32-image loader sample (CPU or GPU). Verifies the full
+# pipeline: data loading, one training epoch, checkpointing, prediction export.
 # Run:  python scripts/train.py --config configs/smoke.yaml
 
 data:
@@ -8,19 +8,19 @@ data:
   dev_manifest: examples/loader_sample/manifest.csv
   final_eval_manifest: examples/loader_sample/manifest.csv
   image_size: 224
-  num_workers: 0
+  num_workers: 0               # single process, avoids DataLoader overhead on 32 images
 
-strategy: uzeroes
+strategy: uzeroes              # any strategy works; uzeroes is the reference
 
 model: densenet121
 
 training:
   seed: 6018
-  epochs: 2
+  epochs: 2                    # just enough to see the loss move
   batch_size: 8
   lr: 1.0e-4
   weight_decay: 1.0e-5
   early_stopping_patience: 2
-  augment: false
+  augment: false               # deterministic for the smoke test
 
-outputs: outputs_smoke
+outputs: outputs_smoke         # kept separate from the formal outputs/
