@@ -1,0 +1,16 @@
+patient_id,study_id,true_label,prob,image_count,image_path,predicted_label,outcome,strategy,threshold
+patient64669,study1,0,0.99443,1,valid/patient64669/study1/view1_frontal.jpg,1,FP,uignore,0.7331
+patient64735,study1,0,0.9794366,1,valid/patient64735/study1/view1_frontal.jpg,1,FP,uignore,0.7331
+patient64656,study1,0,0.9788664,1,valid/patient64656/study1/view1_frontal.jpg,1,FP,uignore,0.7331
+patient64624,study1,0,0.9692403,1,valid/patient64624/study1/view1_frontal.jpg,1,FP,uignore,0.7331
+patient64717,study1,0,0.96719927,1,valid/patient64717/study1/view1_frontal.jpg,1,FP,uignore,0.7331
+patient64669,study1,0,0.99358433,1,valid/patient64669/study1/view1_frontal.jpg,1,FP,uones,0.791
+patient64717,study1,0,0.9931484,1,valid/patient64717/study1/view1_frontal.jpg,1,FP,uones,0.791
+patient64656,study1,0,0.9879259,1,valid/patient64656/study1/view1_frontal.jpg,1,FP,uones,0.791
+patient64641,study1,0,0.97678655,1,valid/patient64641/study1/view1_frontal.jpg,1,FP,uones,0.791
+patient64675,study1,0,0.97449434,1,valid/patient64675/study1/view1_frontal.jpg,1,FP,uones,0.791
+patient64669,study1,0,0.9787648,1,valid/patient64669/study1/view1_frontal.jpg,1,FP,uzeroes,0.5367
+patient64735,study1,0,0.9749748,1,valid/patient64735/study1/view1_frontal.jpg,1,FP,uzeroes,0.5367
+patient64656,study1,0,0.96364146,1,valid/patient64656/study1/view1_frontal.jpg,1,FP,uzeroes,0.5367
+patient64622,study1,0,0.9630122,1,valid/patient64622/study1/view1_frontal.jpg,1,FP,uzeroes,0.5367
+patient64642,study1,0,0.95908386,1,valid/patient64642/study1/view1_frontal.jpg,1,FP,uzeroes,0.5367
